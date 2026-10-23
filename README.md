@@ -69,8 +69,7 @@ one category.
 
 Mutating actions support `--dry-run`. `--yes` confirms an operation but does not
 choose a source or overwrite local edits. `recover` handles interrupted
-transactions. Repository definitions and existing installation records use the
-same format as the core prototype.
+transactions.
 
 Updates are manual. No background service or schedule is installed.
 
