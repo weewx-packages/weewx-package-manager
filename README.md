@@ -10,12 +10,31 @@ The local installer version is `0.1.0a1`.
 
 ## Install
 
-Use the Python environment in which WeeWX is installed. Install the `packaging`
-dependency there. On Debian or Raspberry Pi OS with a system installation, use
-`sudo apt install python3-packaging`. For a WeeWX virtual environment, use
-`python -m pip install 'packaging>=21'` inside that environment.
+Start with WeeWX 5.5.2 installed in its Python environment and Git available.
+Activate that WeeWX virtual environment before running the commands, so
+`python` and `weectl` use the same environment. For a system installation,
+install `packaging>=21` through your distribution in WeeWX's Python environment
+instead of using pip. On Debian or Raspberry Pi OS the package is
+`python3-packaging`.
 
-Build the extension archive from this checkout and install it:
+This project has no release download yet. Obtain the source before building,
+starting in any empty working directory:
+
+```shell
+git clone https://github.com/weewx-packages/weewx-package-manager.git
+cd weewx-package-manager
+```
+
+For the virtual environment, install the runtime dependency:
+
+```shell
+python -m pip install 'packaging>=21'
+```
+
+The archive builder uses only Python's standard library. It does not need
+pytest or a Python package build backend. Replace `/path/to/weewx.conf` with
+your existing station configuration, then build and install the archive from
+the checkout directory:
 
 ```shell
 python tools/build.py
@@ -45,9 +64,12 @@ alias weectl-packages='python -m user.packages'
 weectl-packages search skin --config /path/to/weewx.conf
 ```
 
-Alternatively, `python -m pip install .` installs the `weectl-packages` command
-in the active Python environment. Choose either the WeeWX extension install or
-the Python package install. Avoid mixing their ownership of the same modules.
+Alternatively, after the clone and `cd` steps above, `python -m pip install .`
+from the checkout installs the `weectl-packages` command in the activated WeeWX
+virtual environment. Pip installs the runtime dependencies from `pyproject.toml`
+and obtains `setuptools>=68` in an isolated build environment. Choose either
+the WeeWX extension install or the Python package install. Avoid mixing their
+ownership of the same modules.
 
 ## Operations
 
@@ -78,6 +100,11 @@ Package installers execute Python with the permissions of the invoking user.
 Register sources whose publishers you trust.
 
 ## Development
+
+Use the source checkout obtained above and activate a separate development
+virtual environment. Run these commands from the `weewx-package-manager`
+directory. The `test` extra installs pytest for development; normal runtime
+installation does not require it. Pip supplies the build backend automatically.
 
 ```shell
 python -m pip install -e '.[test]'
