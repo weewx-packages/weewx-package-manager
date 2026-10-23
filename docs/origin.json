@@ -1,0 +1,13 @@
+{
+  "source_repository": "https://github.com/weewx/weewx",
+  "base_revision": "26e269139d47fa2af1b14f3c36b4c8801a0a7b4f",
+  "note": "Repository support extracted from the local, uncommitted WeeWX prototype. Hashes identify the exact input files.",
+  "input_sha256": {
+    "src/weecfg/repository.py": "41faa4b8806c60f427c313566f02fc5e5b9154d45255682464576fe037c9f368",
+    "src/weecfg/extension_state.py": "151289d74acbf156a2d14285d632705a423a7221b6b7b860c3ffa4ba726a33d4",
+    "src/weecfg/extension_manager.py": "42208edd05c7e33503e12a673c5887d81ce4c4aa0d39ca25395eb5aaaaad8972",
+    "src/weectllib/extension_cmd.py": "7233e147fdfc57e7fb080b9cccc0384dedbf9c4e56c2539d9b1c5f5ade499cc9",
+    "src/weecfg/tests/test_repositories.py": "51bccf5bdf8b6d8ea048c35aef15c093c1b0e235d3e40a02958dcd7567614332",
+    "src/weecfg/extension.py": "5e9f8d2bbaf1db1d9cd3d52ad272604dd65f5f9b214566e9630ad9da004394a7"
+  }
+}
