@@ -5,7 +5,8 @@ choice. This extension contains the repository client previously developed as
 a WeeWX core change. It installs under the station's `bin/user` directory.
 
 This is an experimental standalone extraction. The tested base is unmodified
-WeeWX 5.5.2 with Python 3.10 and 3.14. There is no published release yet.
+WeeWX 5.5.2 with Python 3.10 and 3.14. There is no published release yet, and the manager is not in the shared catalog.
+The local installer version is `0.1.0a1`.
 
 ## Install
 
@@ -64,9 +65,10 @@ Updates are manual. No background service or schedule is installed.
 ## Integration with weectl
 
 Stock WeeWX loads `weectl` commands from a fixed list. This extension uses its
-own CLI and does not replace `weecfg`, `weectllib` or `weectl`. Keeping the
-spelling `weectl extension install PACKAGE` for repository packages would need
-a supported CLI integration in the core.
+own CLI and does not replace `weecfg`, `weectllib` or `weectl`. Stock WeeWX
+5.5.2 installs extension archive URLs, files or directories with
+`weectl extension install`; it has no repository or package-ID commands.
+Use `python -m user.packages` for the repository operations shown here.
 
 The private installer adapter follows WeeWX's installer sequence while exposing
 the write hooks required by the transaction journal. Future core changes to
