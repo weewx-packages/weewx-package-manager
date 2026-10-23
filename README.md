@@ -1,44 +1,30 @@
 # WeeWX package manager
 
 Install, search and update WeeWX extensions from repository indexes of your
-choice. This extension contains the repository client previously developed as
-a WeeWX core change. It installs under the station's `bin/user` directory.
+choice. The manager is itself a WeeWX extension and installs under the
+station's `bin/user` directory.
 
-This is an experimental standalone extraction. The tested base is unmodified
-WeeWX 5.5.2 with Python 3.10 and 3.14. There is no published release yet, and the manager is not in the shared catalog.
-The local installer version is `0.1.0a1`.
+It is experimental. The tested base is unmodified WeeWX 5.5.2 with Python
+3.10 and 3.14. The manager is not listed in the shared catalog.
 
 ## Install
 
-Start with WeeWX 5.5.2 installed in its Python environment and Git available.
-Activate that WeeWX virtual environment before running the commands, so
-`python` and `weectl` use the same environment. For a system installation,
-install `packaging>=21` through your distribution in WeeWX's Python environment
-instead of using pip. On Debian or Raspberry Pi OS the package is
-`python3-packaging`.
-
-This project has no release download yet. Obtain the source before building,
-starting in any empty working directory:
-
-```shell
-git clone https://github.com/weewx-packages/weewx-package-manager.git
-cd weewx-package-manager
-```
-
-For the virtual environment, install the runtime dependency:
+Activate the Python environment running WeeWX, so `python` and `weectl` use
+the same environment. Install the `packaging` dependency there. For a virtual
+environment:
 
 ```shell
 python -m pip install 'packaging>=21'
 ```
 
-The archive builder uses only Python's standard library. It does not need
-pytest or a Python package build backend. Replace `/path/to/weewx.conf` with
-your existing station configuration, then build and install the archive from
-the checkout directory:
+For a system installation, use your distribution's package instead. On Debian
+or Raspberry Pi OS it is `python3-packaging`.
+
+Then install the newest release. Replace `/path/to/weewx.conf` with your
+station configuration:
 
 ```shell
-python tools/build.py
-weectl extension install dist/package-manager-0.1.0a1.tar.gz --config /path/to/weewx.conf
+weectl extension install https://github.com/weewx-packages/weewx-package-manager/releases/latest/download/package-manager.tar.gz --config /path/to/weewx.conf
 ```
 
 For a station at `/home/weewx/weewx-data`, run the installed manager as follows.
@@ -105,12 +91,17 @@ Register sources whose publishers you trust.
 
 ## Development
 
-Use the source checkout obtained above and activate a separate development
-virtual environment. Run these commands from the `weewx-package-manager`
-directory. The `test` extra installs pytest for development; normal runtime
+`python tools/build.py` writes the archive under `dist`. Each GitHub release
+carries the versioned archive and the same bytes as `package-manager.tar.gz`,
+which the install command above fetches.
+
+Clone the repository and activate a separate development virtual environment.
+Run these commands from the checkout. The `test` extra installs pytest for development; normal runtime
 installation does not require it. Pip supplies the build backend automatically.
 
 ```shell
+git clone https://github.com/weewx-packages/weewx-package-manager.git
+cd weewx-package-manager
 python -m pip install -e '.[test]'
 python -m pytest -q tests/test_repositories.py
 ```

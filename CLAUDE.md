@@ -26,3 +26,12 @@ Do not replace core files or shadow the normal weectl command.
 The private InstallerEngine retains the core's installer order and exposes the
 write hooks needed for managed transactions. Compare it with upstream when
 updating the supported WeeWX version range.
+
+## Releases
+
+Bump the version in `install.py`, `pyproject.toml` and `tools/build.py`, run
+`just build`, then create the release from the merged main branch:
+`gh release create vVERSION dist/package-manager-VERSION.tar.gz dist/package-manager.tar.gz --latest`.
+Do not mark it as a GitHub prerelease, even for alpha versions: the README and
+the catalog install the manager through `releases/latest/download/package-manager.tar.gz`,
+which skips prereleases.
