@@ -59,6 +59,8 @@ def add_arguments(parser):
     search.add_argument('terms', nargs='*', metavar='TERM')
     search.add_argument('--repo', metavar='ALIAS')
     search.add_argument('--type', dest='package_type', choices=repository.TYPES)
+    search.add_argument('--category', choices=repository.CATEGORIES,
+                        help='Show only skins, drivers, uploaders, forecasts or other packages.')
     search.add_argument('--refresh', action='store_true', help='Refresh indexes before searching.')
     _options(search)
     for action in ('check-updates', 'update'):
@@ -257,11 +259,12 @@ def repository_action(manager, namespace):
 def search(manager, namespace):
     """Display keyword matches and signal when any selected source failed.
 
-    The namespace contains search terms and optional source/type/refresh filters.
+    The namespace contains search terms and optional source/type/category/refresh filters.
     Available matches are printed before an incomplete lookup returns an error.
     """
     results, errors = manager.registry.search(namespace.terms, namespace.repo,
-                                               namespace.package_type, namespace.refresh)
+                                               namespace.package_type, namespace.refresh,
+                                               namespace.category)
     states = manager.store.all()
     for source, package, entry in results:
         latest = max(package['releases'], key=lambda item: packaging.version.Version(item['version']))

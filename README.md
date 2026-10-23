@@ -77,6 +77,10 @@ Use `python -m user.packages --help` for all actions and append `--help` to an
 action for its options. `--pre` permits prereleases. `--version VERSION` selects
 an exact package version. Put custom installer arguments after `--`.
 
+`search --category CATEGORY` lists one kind of package: `skin`, `driver`,
+`uploader`, `forecast` or `other`. Every package in an index declares exactly
+one category.
+
 Mutating actions support `--dry-run`. `--yes` confirms an operation but does not
 choose a source or overwrite local edits. `recover` handles interrupted
 transactions. Repository definitions and existing installation records use the
