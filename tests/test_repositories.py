@@ -83,7 +83,7 @@ class Installer(weecfg.extension.ExtensionInstaller):
 def catalog(releases, repository_id='test.weather'):
     return {'schema_version': 1, 'repository': {'id': repository_id, 'name': 'Test weather'},
             'packages': [{'id': 'nordic', 'installer_name': 'nordic', 'name': 'Nordic',
-                          'description': 'A test forecast skin', 'types': ['skin'],
+                          'description': 'A test forecast skin', 'types': ['skin'], 'category': 'skin',
                           'keywords': ['ecowitt', 'forecast'], 'releases': releases}]}
 
 
@@ -110,6 +110,8 @@ def register(config, alias, path):
     lambda item: item['packages'][0]['releases'][0]['archive'].pop('sha256'),
     lambda item: item['packages'][0].update(keywords=['Ecowitt', 'ecowitt']),
     lambda item: item['packages'][0].update(installer_name='../outside'),
+    lambda item: item['packages'][0].pop('category'),
+    lambda item: item['packages'][0].update(category='service'),
 ])
 def test_reject_invalid_contract(tmp_path, changes):
     document = catalog([make_release(tmp_path)])
@@ -134,6 +136,8 @@ def test_catalog_versions_and_search(configuration, tmp_path):
     assert len(results) == 1 and not errors
     assert repository.select_release(results[0][1])['version'] == '1.0'
     assert manager.registry.search(['ecowitt'], package_type='driver')[0] == []
+    assert len(manager.registry.search([], category='skin')[0]) == 1
+    assert manager.registry.search([], category='uploader')[0] == []
 
 
 def test_install_update_and_state(configuration, tmp_path):

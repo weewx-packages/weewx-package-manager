@@ -46,6 +46,9 @@ REPOSITORY_ID = re.compile(r'[A-Za-z0-9_.-]+\Z')
 UUID = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\Z')
 DIGEST = re.compile(r'[0-9a-fA-F]{64}\Z')
 TYPES = ('skin', 'driver', 'service', 'search-list', 'generator', 'other')
+# Purpose of a package, one per package, for listings and search. 'types' names
+# the WeeWX components it installs; a service can be an uploader or a forecast.
+CATEGORIES = ('skin', 'driver', 'uploader', 'forecast', 'other')
 FORMATS = ('zip', 'tar', 'tar.gz', 'tar.bz2', 'tar.xz')
 OPTIONS = {'manager_root', 'cache_root', 'timeout', 'redirect_limit', 'index_max_bytes',
            'archive_max_bytes', 'unpacked_max_bytes'}
@@ -416,7 +419,7 @@ def validate_catalog(document, base):
         raise RepositoryError('packages must be an array.')
     seen_packages = set()
     for package in catalog['packages']:
-        _object(package, ('id', 'installer_name', 'name', 'description', 'types', 'releases'),
+        _object(package, ('id', 'installer_name', 'name', 'description', 'types', 'category', 'releases'),
                 ('keywords', 'homepage'), 'package')
         _text(package['id'], 'package ID', 64, SLUG)
         _text(package['installer_name'], 'installer name', 128, INSTALLER_NAME)
@@ -430,6 +433,8 @@ def validate_catalog(document, base):
                 any(not isinstance(item, str) or item not in TYPES for item in types) or
                 len(types) != len(set(types))):
             raise RepositoryError('Invalid package types.')
+        if package['category'] not in CATEGORIES:
+            raise RepositoryError('Invalid package category.')
         keywords = package.setdefault('keywords', [])
         if not isinstance(keywords, list) or len(keywords) > 64:
             raise RepositoryError('Invalid package keywords.')
@@ -875,7 +880,7 @@ class Registry:
                         dict(response, url=location, catalog=catalog, fetched_at=time.time()))
         return alias
 
-    def search(self, terms=(), alias=None, package_type=None, refresh=False):
+    def search(self, terms=(), alias=None, package_type=None, refresh=False, category=None):
         """Find keyword matches while keeping each source's package separate.
 
         Args:
@@ -884,6 +889,7 @@ class Registry:
             alias (str|None): One source to search, or all enabled sources if None.
             package_type (str|None): Required declared type, or None for any type.
             refresh (bool): True to refresh selected indexes before matching.
+            category (str|None): Required package category, or None for any.
 
         Returns:
             tuple[list, list]: A two-way tuple (matches, failures). Each match is
@@ -893,6 +899,8 @@ class Registry:
         """
         if package_type is not None and package_type not in TYPES:
             raise RepositoryError('Unknown extension type: ' + display(package_type))
+        if category is not None and category not in CATEGORIES:
+            raise RepositoryError('Unknown package category: ' + display(category))
         selected = [alias] if alias else sorted(self.sources)
         results = []
         errors = []
@@ -910,8 +918,10 @@ class Registry:
             for package in entry['catalog']['packages']:
                 if package_type and package_type not in package['types']:
                     continue
+                if category and category != package['category']:
+                    continue
                 fields = [package['id'], package['name'], package['description']]
-                fields += package['types'] + package['keywords']
+                fields += package['types'] + [package['category']] + package['keywords']
                 if all(any(word in field.casefold() for field in fields) for word in words):
                     results.append((self.sources[name], package, entry))
         results.sort(key=lambda item: (item[1]['id'], item[0]['alias']))
