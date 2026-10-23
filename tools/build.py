@@ -8,12 +8,18 @@ import io
 from pathlib import Path
 import tarfile
 
+LATEST_NAME = 'package-manager.tar.gz'
+
 
 def build():
-    """Write the archive and its SHA-256 beside it under dist.
+    """Write the archive, its SHA-256 and a copy without the version under dist.
+
+    The copy is uploaded with every release under the same name, so that
+    ``releases/latest/download/package-manager.tar.gz`` always installs the
+    newest release.
 
     Returns:
-        Path: The generated archive.
+        Path: The versioned archive.
     """
     root = Path(__file__).resolve().parents[1]
     version = '0.1.0a1'
@@ -40,6 +46,7 @@ def build():
     checksum = hashlib.sha256(destination.read_bytes()).hexdigest()
     destination.with_suffix(destination.suffix + '.sha256').write_text(
         checksum + '  ' + destination.name + '\n')
+    (destination.parent / LATEST_NAME).write_bytes(destination.read_bytes())
     return destination
 
 
