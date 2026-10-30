@@ -85,7 +85,10 @@ installing the extension:
   manager does not run apt; that needs root.
 - After installation, the setup steps are printed, with `{user}` replaced by
   the account that runs WeeWX: the owner of `weewx.conf`, or `weewx` when root
-  owns it.
+  owns it. Catalogs write the steps for a package installation; in a virtual
+  environment, `weectl` steps are printed without `sudo`.
+- In a virtual environment, Debian packages of Python modules (`python3-*`) are
+  skipped, since pip provides those modules.
 
 `requirements NAME` checks an installed package again, for example after a
 system upgrade, and prints its setup steps. It exits with 1 if something is

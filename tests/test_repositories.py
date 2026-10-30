@@ -644,8 +644,9 @@ def test_reject_invalid_requirements(tmp_path, changes):
 def test_install_provides_requirements_and_prints_setup(configuration, tmp_path, monkeypatch, capsys):
     release = make_release(tmp_path)
     release['requirements'] = {'python': ['packaging', 'pytest>=999', 'surely-absent-distribution>=1'],
-                               'debian': ['python3-surely-absent']}
-    release['setup'] = [{'command': 'sudo usermod -aG plugdev {user}', 'note': 'dongle access'}]
+                               'debian': ['python3-surely-absent', 'librtlsdr-surely-absent']}
+    release['setup'] = [{'command': 'sudo weectl station reconfigure --driver=user.nordic'},
+                        {'command': 'sudo usermod -aG plugdev {user}', 'note': 'dongle access'}]
     manager = register(configuration, 'personal', write_catalog(tmp_path, [release]))
     commands = []
     monkeypatch.setattr(requirements, 'in_virtual_environment', lambda: True)
@@ -662,6 +663,9 @@ def test_install_provides_requirements_and_prints_setup(configuration, tmp_path,
     # Only what is absent or too old is installed, into WeeWX's own interpreter.
     assert pip == [[sys.executable, '-m', 'pip', 'install', 'pytest>=999',
                     'surely-absent-distribution>=1']]
-    assert 'sudo apt install python3-surely-absent' in output
+    assert 'sudo apt install librtlsdr-surely-absent' in output
+    # A virtual environment takes Python modules from pip, not from Debian.
+    assert 'python3-surely-absent' not in output
     user = requirements.service_user(manager.config_path)
     assert 'sudo usermod -aG plugdev %s    # dongle access' % user in output
+    assert '  weectl station reconfigure --driver=user.nordic\n' in output
