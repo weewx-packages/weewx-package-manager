@@ -1,5 +1,6 @@
 #
 #    Copyright (c) 2009-2026 Tom Keffer <tkeffer@gmail.com> and Matthew Wall
+#    Copyright (c) 2026 Manuel Hilgert <hilman2@gmail.com>
 #
 #    See the file LICENSE.txt for your rights.
 #    Modified 2026-10-23 by weewx-packages: standalone extension namespace.
@@ -76,6 +77,10 @@ def add_arguments(parser):
         if action == 'switch-source':
             _release_options(child)
         _options(child, True)
+    requirements = actions.add_parser(
+        'requirements', help='Check what an installed package needs outside WeeWX.')
+    requirements.add_argument('name', metavar='NAME')
+    _options(requirements)
     for action in ('detach', 'uninstall', 'recover'):
         child = actions.add_parser(action, help='Detach, remove, or recover extension state.')
         if action != 'recover':
@@ -157,6 +162,9 @@ def run(namespace, extra_args=None):
             manager.uninstall(namespace.name, yes)
         elif namespace.action == 'recover':
             manager.recover(yes)
+        elif namespace.action == 'requirements':
+            if not manager.requirements(namespace.name):
+                raise SystemExit(1)
     except repository.RepositoryError as error:
         print(str(error), file=sys.stderr)
         raise SystemExit(error.code)

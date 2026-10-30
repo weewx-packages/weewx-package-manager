@@ -1,4 +1,5 @@
 # Copyright 2026 weewx-packages contributors
+# Copyright (c) 2026 Manuel Hilgert <hilman2@gmail.com>
 # See LICENSE.txt for your rights.
 """Install the manager under the station's user root without registering services."""
 
@@ -24,5 +25,6 @@ class PackageManagerInstaller(ExtensionInstaller):
                 'bin/user/packages/engine.py',
                 'bin/user/packages/extension_manager.py',
                 'bin/user/packages/repository.py',
+                'bin/user/packages/requirements.py',
                 'bin/user/packages/extension_state.py',
             ])])

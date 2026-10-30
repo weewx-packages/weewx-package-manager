@@ -25,6 +25,7 @@ import weecfg
 from user.packages import extension_manager
 from user.packages import extension_state
 from user.packages import repository
+from user.packages import requirements
 
 
 @pytest.fixture
@@ -624,3 +625,43 @@ def test_hook_supplied_root_setting_survives_update_and_is_owned(configuration, 
     assert manager.config['repository_test'] == 'added'
     manager.uninstall('nordic', yes=True)
     assert 'repository_test' not in manager.config
+
+
+@pytest.mark.parametrize('changes', [
+    lambda release: release.update(requirements={'python': ['numpy>='], 'debian': []}),
+    lambda release: release.update(requirements={'debian': ['Python3-Numpy']}),
+    lambda release: release.update(requirements={'cargo': ['serde']}),
+    lambda release: release.update(setup=[{'command': 'usermod -aG plugdev {account}'}]),
+    lambda release: release.update(setup=[]),
+])
+def test_reject_invalid_requirements(tmp_path, changes):
+    document = catalog([make_release(tmp_path)])
+    changes(document['packages'][0]['releases'][0])
+    with pytest.raises(repository.RepositoryError):
+        repository.validate_catalog(document, (tmp_path / 'repository.json').as_uri())
+
+
+def test_install_provides_requirements_and_prints_setup(configuration, tmp_path, monkeypatch, capsys):
+    release = make_release(tmp_path)
+    release['requirements'] = {'python': ['packaging', 'pytest>=999', 'surely-absent-distribution>=1'],
+                               'debian': ['python3-surely-absent']}
+    release['setup'] = [{'command': 'sudo usermod -aG plugdev {user}', 'note': 'dongle access'}]
+    manager = register(configuration, 'personal', write_catalog(tmp_path, [release]))
+    commands = []
+    monkeypatch.setattr(requirements, 'in_virtual_environment', lambda: True)
+    monkeypatch.setattr(requirements.shutil, 'which', lambda name: '/usr/bin/' + name)
+
+    def run(command, **options):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout='not-installed')
+
+    monkeypatch.setattr(requirements.subprocess, 'run', run)
+    manager.install('nordic', yes=True)
+    output = capsys.readouterr().out
+    pip = [command for command in commands if 'pip' in command]
+    # Only what is absent or too old is installed, into WeeWX's own interpreter.
+    assert pip == [[sys.executable, '-m', 'pip', 'install', 'pytest>=999',
+                    'surely-absent-distribution>=1']]
+    assert 'sudo apt install python3-surely-absent' in output
+    user = requirements.service_user(manager.config_path)
+    assert 'sudo usermod -aG plugdev %s    # dongle access' % user in output

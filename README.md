@@ -73,6 +73,24 @@ transactions.
 
 Updates are manual. No background service or schedule is installed.
 
+## Requirements and setup steps
+
+A catalog release can list Python requirements, Debian packages and setup
+steps. `install` and `update` check them in the Python running WeeWX before
+installing the extension:
+
+- In a virtual environment, missing or outdated Python requirements are
+  installed with that environment's pip after confirmation.
+- Missing Debian packages are listed as one `sudo apt install` command. The
+  manager does not run apt; that needs root.
+- After installation, the setup steps are printed, with `{user}` replaced by
+  the account that runs WeeWX: the owner of `weewx.conf`, or `weewx` when root
+  owns it.
+
+`requirements NAME` checks an installed package again, for example after a
+system upgrade, and prints its setup steps. It exits with 1 if something is
+missing.
+
 ## Integration with weectl
 
 Stock WeeWX loads `weectl` commands from a fixed list. This extension uses its

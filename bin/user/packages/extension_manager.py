@@ -1,4 +1,6 @@
 #
+#    Copyright (c) 2026 Manuel Hilgert <hilman2@gmail.com>
+#
 #    See the file LICENSE.txt for your rights.
 #    Modified 2026-10-23 by weewx-packages: standalone extension namespace.
 #
@@ -24,6 +26,7 @@ import weecfg.extension
 from user.packages.engine import InstallerEngine
 from user.packages import extension_state
 from user.packages import repository
+from user.packages import requirements
 import weeutil.weeutil
 from weeutil.printer import Printer
 import weewx
@@ -367,6 +370,7 @@ class ExtensionManager:
             switching (bool): True for an explicit source switch. This permits a
                 new binding and runs installation even for an unchanged version.
         """
+        requirements.prepare(release, yes, self.dry_run)
         # Download outside the writer locks, then check that neither the chosen
         # source nor the installed inventory changed while the download was running.
         snapshot = copy.deepcopy(self.registry.source(alias))
@@ -414,6 +418,32 @@ class ExtensionManager:
                 self._apply(directory, installer_path, installer, state, snapshot['source_id'],
                             package['id'], release['archive']['sha256'], yes, extra_args,
                             release['restart_required'])
+        if not self.dry_run:
+            requirements.next_steps(release, self.config_path)
+
+    def requirements(self, name):
+        """Check the requirements of an installed package against its bound source.
+
+        Args:
+            name (str): Installer name of the installed extension.
+
+        Returns:
+            bool: True if nothing is missing.
+        """
+        state = self.store.read(name)
+        if not state:
+            raise repository.RepositoryError('%s has no repository binding.' % name)
+        alias = self.registry.alias_for_id(state['source_id'])
+        entry = self.registry.get(alias, refresh=True, persist=not self.dry_run)
+        package = next((item for item in entry['catalog']['packages']
+                        if item['id'] == state['package_id']), None)
+        release = package and next((item for item in package['releases']
+                                    if packaging.version.Version(item['version']) ==
+                                    packaging.version.Version(state['version'])), None)
+        if release is None:
+            raise repository.RepositoryError('The source no longer lists %s %s.' % (
+                state['package_id'], state['version']))
+        return requirements.report(release, self.config_path)
 
     def install_direct(self, source, yes=False, extra_args=None):
         """Install a directory or archive without creating a repository binding.
