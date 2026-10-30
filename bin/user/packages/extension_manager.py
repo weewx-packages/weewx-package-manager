@@ -839,12 +839,14 @@ class ExtensionManager:
                     continue
                 package = self._package(alias, state['package_id'])
                 self._recorded_digest(state, package)
-                release = repository.select_release(package, version, pre)
+                # Whoever runs a prerelease has opted in: its successors are
+                # prereleases too, and a stable release is one more candidate.
+                current = packaging.version.Version(state['version'])
+                release = repository.select_release(package, version, pre or current.is_prerelease)
                 if release is None:
                     raise repository.RepositoryError('No compatible release for ' + name)
                 print('%s [%s]: installed %s, compatible %s' %
                       (name, alias, state['version'], release['version']))
-                current = packaging.version.Version(state['version'])
                 installed = next((item for item in package['releases']
                                   if packaging.version.Version(item['version']) == current), None)
                 if installed and repository.incompatibility(installed):
