@@ -15,7 +15,7 @@ class PackageManagerInstaller(ExtensionInstaller):
         # Installation succeeds independently of third-party Python dependencies.
         # The command needs packaging in the same environment as WeeWX.
         super().__init__(
-            name='package-manager', version='0.1.0a1',
+            name='package-manager', version='0.1.0a2',
             description='Install and update WeeWX extensions from arbitrary repository indexes',
             author='weewx-packages contributors',
             files=[('bin/user/packages', [

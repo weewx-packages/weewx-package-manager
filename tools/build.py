@@ -22,7 +22,7 @@ def build():
         Path: The versioned archive.
     """
     root = Path(__file__).resolve().parents[1]
-    version = '0.1.0a1'
+    version = '0.1.0a2'
     destination = root / 'dist' / ('package-manager-%s.tar.gz' % version)
     destination.parent.mkdir(exist_ok=True)
     buffer = io.BytesIO()
