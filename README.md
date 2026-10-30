@@ -60,7 +60,8 @@ ownership of the same modules.
 ## Operations
 
 Use `python -m user.packages --help` for all actions and append `--help` to an
-action for its options. `--pre` permits prereleases. `--version VERSION` selects
+action for its options. `--pre` permits prereleases. An installed prerelease
+updates to later prereleases without it. `--version VERSION` selects
 an exact package version. Put custom installer arguments after `--`.
 
 `search --category CATEGORY` lists one kind of package: `skin`, `driver`,

@@ -43,7 +43,7 @@ def test_archive_install_manage_and_remove(tmp_path):
     initial_config = config.read_bytes()
     # Building with the checkout as cwd does not put it on the installed CLI's path.
     subprocess.run([sys.executable, str(root / 'tools/build.py')], check=True, cwd=root)
-    archive = root / 'dist/package-manager-0.1.0a3.tar.gz'
+    archive = root / 'dist/package-manager-0.1.0a4.tar.gz'
     command('weectl', 'extension', 'install', str(archive), '--config', str(config), '-y')
     assert config.read_bytes() == initial_config
     for source in (root / 'bin/user/packages').glob('*.py'):

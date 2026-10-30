@@ -165,6 +165,28 @@ def test_install_update_and_state(configuration, tmp_path):
     assert 'NordicReport' not in manager.config['StdReport']
 
 
+def test_update_follows_an_installed_prerelease(configuration, tmp_path):
+    alpha = make_release(tmp_path, '1.0a1', 'alpha')
+    path = write_catalog(tmp_path, [alpha])
+    manager = register(configuration, 'personal', path)
+    manager.install('nordic', version='1.0a1', pre=True, yes=True)
+    later = make_release(tmp_path, '1.0a2', 'later')
+    path.write_text(json.dumps(catalog([alpha, later])))
+    manager.updates(yes=True)
+    assert manager.store.read('nordic')['version'] == '1.0a2'
+
+
+def test_update_keeps_a_stable_install_off_prereleases(configuration, tmp_path):
+    stable = make_release(tmp_path)
+    path = write_catalog(tmp_path, [stable])
+    manager = register(configuration, 'personal', path)
+    manager.install('nordic', yes=True)
+    alpha = make_release(tmp_path, '2.0a1', 'alpha')
+    path.write_text(json.dumps(catalog([stable, alpha])))
+    manager.updates(yes=True)
+    assert manager.store.read('nordic')['version'] == '1.0'
+
+
 def test_selected_source_does_not_follow_higher_version(configuration, tmp_path):
     first = make_release(tmp_path)
     other = make_release(tmp_path, '8.0', 'wrong-source')
