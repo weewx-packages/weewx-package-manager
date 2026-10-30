@@ -1,4 +1,6 @@
 #
+#    Copyright (c) 2026 Manuel Hilgert <hilman2@gmail.com>
+#
 #    See the file LICENSE.txt for your rights.
 #    Modified 2026-10-23 by weewx-packages: standalone extension namespace.
 #
@@ -451,7 +453,11 @@ def validate_catalog(document, base):
         seen_versions = set()
         for release in package['releases']:
             _object(release, ('version', 'requires_python', 'requires_weewx', 'archive'),
-                    ('release_notes', 'restart_required', 'yanked'), 'release')
+                    ('release_notes', 'restart_required', 'yanked', 'requirements', 'setup'),
+                    'release')
+            # Imported here because requirements uses this module's validators.
+            from user.packages import requirements
+            requirements.validate(release)
             _text(release['version'], 'release version', 128)
             try:
                 version = packaging.version.Version(release['version'])
