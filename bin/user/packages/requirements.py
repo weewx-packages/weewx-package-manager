@@ -104,8 +104,26 @@ def missing_python(release):
     return missing
 
 
+def debian_packages(release):
+    """Return the Debian packages of a release that this Python needs.
+
+    Debian packages named python3-* are the distribution's builds of Python
+    requirements. A virtual environment gets those from pip instead.
+
+    Args:
+        release (dict): Validated catalog release.
+
+    Returns:
+        list[str]: Package names.
+    """
+    packages = release.get('requirements', {}).get('debian', [])
+    if in_virtual_environment():
+        return [name for name in packages if not name.startswith('python3-')]
+    return packages
+
+
 def missing_debian(release):
-    """Return the Debian packages of a release that are not installed.
+    """Return the Debian packages this Python needs that are not installed.
 
     Args:
         release (dict): Validated catalog release.
@@ -113,7 +131,7 @@ def missing_debian(release):
     Returns:
         list[str]|None: Missing packages, or None on a system without dpkg.
     """
-    packages = release.get('requirements', {}).get('debian', [])
+    packages = debian_packages(release)
     if not packages:
         return []
     if shutil.which('dpkg-query') is None:
@@ -197,7 +215,13 @@ def next_steps(release, config_path):
     user = service_user(config_path)
     print('Next steps:')
     for step in steps:
-        line = '  ' + step['command'].replace('{user}', user)
+        command = step['command'].replace('{user}', user)
+        # Catalogs write the steps for a package installation. In a virtual
+        # environment, weectl is the environment's own and runs without sudo,
+        # which would not find it.
+        if in_virtual_environment() and command.startswith('sudo weectl '):
+            command = command[len('sudo '):]
+        line = '  ' + command
         if step.get('note'):
             line += '    # ' + step['note']
         print(line)
@@ -218,7 +242,7 @@ def report(release, config_path):
     debian = missing_debian(release)
     for item in needs.get('python', []):
         print('Python %s: %s' % (item, 'missing' if item in python else 'ok'))
-    for name in needs.get('debian', []):
+    for name in debian_packages(release):
         state = 'unknown, no dpkg' if debian is None else 'missing' if name in debian else 'ok'
         print('Debian %s: %s' % (name, state))
     if not needs:
